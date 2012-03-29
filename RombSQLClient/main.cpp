@@ -1,6 +1,6 @@
 #include <iostream>
-
+#include <cstdlib>
 int main(int argc, char **argv) {
-    std::cout << "Hello, world!" << std::endl;
+    system("tar cf name.db `ls`");
     return 0;
 }
