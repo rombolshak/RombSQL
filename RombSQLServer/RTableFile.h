@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -17,11 +17,24 @@
 */
 
 
-#ifndef RCELLVALUE_H
-#define RCELLVALUE_H
+#ifndef RTABLEFILE_H
+#define RTABLEFILE_H
 
-class RCellValue
-{
-};
+#include <string>
+#include <vector>
+#include <map>
 
-#endif // RCELLVALUE_H
+#include "RCell.h"
+
+#include "jsoncpp/include/reader.h"
+#include "jsoncpp/include/writer.h"
+#include "jsoncpp/include/value.h"
+
+using namespace std;
+using namespace Json;
+namespace RSQL {
+	typedef vector< map<string, RFieldType> > RTableDefinition;
+	typedef map<string, RCell> RTableRecord;
+}
+
+#endif // RTABLE_H

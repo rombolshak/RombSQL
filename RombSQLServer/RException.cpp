@@ -17,14 +17,5 @@
 */
 
 
-#ifndef RTABLE_H
-#define RTABLE_H
-
-#include "RTableFile.h"
 #include "RException.h"
 
-class RTable
-{
-};
-
-#endif // RTABLE_H

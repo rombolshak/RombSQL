@@ -1,5 +1,5 @@
 /*
-    RombSQL Server
+    <one line to give the program's name and a brief idea of what it does.>
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -15,8 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+
 #include "RTable.h"
-#include "jsoncpp/include/json.h"
-#include "jsoncpp/include/reader.h"
-#include "jsoncpp/include/writer.h"
 

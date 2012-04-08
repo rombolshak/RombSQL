@@ -17,14 +17,34 @@
 */
 
 
-#ifndef RTABLE_H
-#define RTABLE_H
+#ifndef REXCEPTION_H
+#define REXCEPTION_H
+#include <string>
+using namespace std;
+namespace RSQL {
+	class RException {
+	public:
+		virtual string message();
+	};
 
-#include "RTableFile.h"
-#include "RException.h"
-
-class RTable
-{
+	enum FileError {
+	};
+class RFileException : public RException {
+	FileError code;
+public:
+	RFileException(FileError fe) {code = fe;};
+	string message();
 };
 
-#endif // RTABLE_H
+enum CellError {
+	IllegalType
+};
+class RCellException : public RException
+{
+	CellError code;
+public:
+	RCellException(CellError ce) {code = ce;};
+	string message();
+};
+}
+#endif // EXCEPTION_H

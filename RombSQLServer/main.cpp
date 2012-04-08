@@ -26,21 +26,7 @@ void client_thread( int * sock ) {
 
 
 int main( void ) {
-	Json::Value root;
-	root["encoding"] = "UTF-8";
-	root["indent"]["length"] = 3;
-	root["indent"]["use_space"] = true;
-	Json::StyledWriter writer;
-	// Make a new JSON document for the configuration. Preserve original comments.
-	std::string outputConfig = writer.write( root );
 	
-	cout << outputConfig;
-	// You can also use streams.  This will put the contents of any JSON
-	// stream at a particular sub-value, if you'd like.
-	//std::cin >> root["subtree"];
-	
-	// And you can write to a stream, using the StyledWriter automatically.
-	std::cout << root;
 	return 0;
 	int lsock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 	if (lsock > 0) {
