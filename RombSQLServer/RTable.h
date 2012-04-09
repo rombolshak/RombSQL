@@ -22,9 +22,33 @@
 
 #include "RTableFile.h"
 #include "RException.h"
+#include <string>
+using namespace std;
+
+namespace RSQL {
+
+class RTableCondition
+{
+	enum {Operation, Value, Field} nodeType;
+	OpCode operation;
+	RFieldType retType;
+	long l; string s; bool b;
+	string fieldName;
+
+	RTableCondition *left, *right;
+public:
+	void bind(string name, RFieldType, void * val);
+};
 
 class RTable
 {
+	public:
+		static bool CreateTable(string name, RTableDefinition);
+		static bool DeleteTable(string name);
+		static bool DropTable(string name);
+		static bool Insert(string name, RTableRecord);
+		static bool Delete(string name, RTableCondition);
+		static vector< RTableRecord > Select(string name, vector< string > fields, RTableCondition);
 };
-
+}
 #endif // RTABLE_H
