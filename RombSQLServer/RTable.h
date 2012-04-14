@@ -38,6 +38,7 @@ class RTableCondition
 	RTableCondition *left, *right;
 public:
 	void bind(string name, RFieldType, void * val);
+	RTableCondition * check();
 };
 
 class RTable

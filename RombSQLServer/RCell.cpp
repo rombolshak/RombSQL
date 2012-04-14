@@ -19,4 +19,24 @@
 
 #include "RCell.h"
 
+namespace RSQL
+{
+RCell* RCell::exec ( OpCode , RCell* right )
+{
 
+}
+RCell* RLongCell::exec ( OpCode o, RCell* c )
+{
+  return RSQL::RCell::exec ( o, c );
+}
+RCell* RTextCell::exec ( OpCode o, RCell* c )
+{
+  return RSQL::RCell::exec ( o, c );
+}
+RCell* RBoolCell::exec ( OpCode o, RCell* c )
+{
+  return RSQL::RCell::exec ( o, c );
+}
+
+}
+// kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

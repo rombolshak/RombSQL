@@ -18,4 +18,25 @@
 
 
 #include "RException.h"
+#include <iostream>
+namespace RSQL
+{
+string RFileException::message()
+{
+	switch (code)
+	{
+		case NotExists: return "Файл не существует";
+		case CantParse: return "Файл поврежден";
+	}
+}
+string RCellException::message()
+{
+  return RSQL::RException::message();
+}
+string RException::message()
+{
+	cout << "Произошла ошибка" << endl;
+}
+
+}
 

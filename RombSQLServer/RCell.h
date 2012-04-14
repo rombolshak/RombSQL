@@ -19,6 +19,7 @@
 #ifndef RCELL_H
 #define RCELL_H
 
+#include <iostream>
 #include <string>
 #include "RException.h"
 using namespace std;
@@ -59,6 +60,7 @@ public:
     virtual RCell * exec  ( OpCode, RCell * right );
     virtual void getValue ( long& ) = 0;
     virtual void getValue ( string& ) = 0;
+    virtual ~RCell() {cout << "RCell destructor" << endl;}
 };
 class RLongCell : public RCell
 {

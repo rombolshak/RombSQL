@@ -7,12 +7,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <iosfwd>
+#include <ios>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
-
+#include <fstream>
+#include <vector>
+#include <iostream>
 using namespace std;
 /* Порт на котором сервер будет принимать соединения */
 #define LPORT 4567
@@ -28,6 +32,7 @@ void client_thread( int * sock ) {
 int main( void ) {
 	
 	return 0;
+	
 	int lsock = socket( AF_INET, SOCK_STREAM, IPPROTO_TCP );
 	if (lsock > 0) {
 		printf( "Сокет успешно создан\n");

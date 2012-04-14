@@ -26,15 +26,29 @@
 
 #include "RCell.h"
 
-#include "jsoncpp/include/reader.h"
-#include "jsoncpp/include/writer.h"
-#include "jsoncpp/include/value.h"
-
 using namespace std;
-using namespace Json;
 namespace RSQL {
-	typedef vector< map<string, RFieldType> > RTableDefinition;
-	typedef map<string, RCell> RTableRecord;
+	typedef map<string, RFieldType> RTableDefinition;
+	typedef map<string, RCell*> RTableRecord;
+	typedef pair<RTableDefinition, vector<RTableRecord> > _RTable;
+	class RTableFile 
+	{
+		string name;
+		static map<string, pair <_RTable, int> > openedTables;
+		int current;
+		_RTable& load();
+	public:
+		RTableFile(string name);
+		static void create(string name);
+		static void delet(string name);
+		static RTableFile open(string name);
+		RTableRecord readNextRecord();
+		void deleteCurrentRecord();
+		void updateCurrentRecord(RTableRecord);
+		void save();
+		void close(bool save = true);
+		~RTableFile();
+	};
 }
 
 #endif // RTABLE_H
