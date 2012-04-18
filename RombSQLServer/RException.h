@@ -29,7 +29,8 @@ namespace RSQL {
 
 	enum FileError {
 		NotExists,
-		CantParse
+		FileExist,
+		OutOfRange
 	};
 class RFileException : public RException {
 	FileError code;

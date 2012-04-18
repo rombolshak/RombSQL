@@ -37,14 +37,17 @@ namespace RSQL {
 		static map<string, pair <_RTable, int> > openedTables;
 		int current;
 		_RTable& load();
-	public:
+		static _RTable& load(string name);
+		static void write ( string name, RSQL::_RTable& t );
 		RTableFile(string name);
-		static void create(string name);
+	public:		
+		static void create(string name, RTableDefinition);
+		static void drop(string name);
 		static void delet(string name);
 		static RTableFile open(string name);
-		RTableRecord readNextRecord();
+		RTableRecord readRecordAndGoToNext();
 		void deleteCurrentRecord();
-		void updateCurrentRecord(RTableRecord);
+		void updateCurrentRecordAndGoToNext(RTableRecord);
 		void save();
 		void close(bool save = true);
 		~RTableFile();

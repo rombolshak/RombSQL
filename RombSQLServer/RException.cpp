@@ -26,7 +26,8 @@ string RFileException::message()
 	switch (code)
 	{
 		case NotExists: return "Файл не существует";
-		case CantParse: return "Файл поврежден";
+		case FileExist: return "Файл уже существует";
+		case OutOfRange: return "Выход за границы массива";
 	}
 }
 string RCellException::message()
