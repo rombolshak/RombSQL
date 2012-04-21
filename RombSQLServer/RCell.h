@@ -60,6 +60,7 @@ public:
     virtual RCell * exec  ( OpCode, RCell * right );
     virtual void getValue ( long& ) = 0;
     virtual void getValue ( string& ) = 0;
+    virtual void getValue ( bool& ) = 0;
     virtual ~RCell() {cout << "RCell destructor" << endl;}
 };
 class RLongCell : public RCell
@@ -71,6 +72,7 @@ public:
     RCell * exec (OpCode, RCell*);
     void getValue(long& val) {val = l;}
     void getValue(string&) {throw RCellException(IllegalType);}
+    void getValue(bool&) {throw RCellException(IllegalType);}
 };
 class RTextCell : public RCell
 {
@@ -81,6 +83,7 @@ public:
     RCell * exec (OpCode, RCell*);
     void getValue(string& val) {val = s;}
     void getValue(long&) {throw RCellException(IllegalType);}
+    void getValue(bool&) {throw RCellException(IllegalType);}
 };
 class RBoolCell : public RCell
 {

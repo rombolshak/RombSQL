@@ -30,6 +30,19 @@ string RFileException::message()
 		case OutOfRange: return "Выход за границы массива";
 	}
 }
+string RTableException::message()
+{
+	switch (code)
+	{
+		case NullChilds: return "Недостаточно аргументов для передачи в операцию";
+		case IllegType: return "Не является типом LONG или TEXT";
+		case NotSameTypes: return "Типы аргументов не совпадают";
+		case NotBool: return "Значение не является bool";
+		case NotLong: return "Значение не является long";
+		case NotText: return "Значение не является text";
+	}
+}
+
 string RCellException::message()
 {
   return RSQL::RException::message();

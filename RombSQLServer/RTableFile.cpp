@@ -33,7 +33,7 @@ _RTable& RTableFile::load()
 
 _RTable& RTableFile::load ( string name )
 {
-  _RTable t;
+  _RTable *t = new _RTable();
   RTableDefinition def;
   vector<RTableRecord> data;
   ifstream f ( name.c_str() );
@@ -83,20 +83,23 @@ _RTable& RTableFile::load ( string name )
       data.push_back ( rec );
     }
   }
-  t.first = def;
-  t.second = data;
-  return t;
+  t->first = def;
+  t->second = data;
+  return *t;
 }
 
 
 RTableFile::RTableFile ( string name )
 {
+  map<string, pair <_RTable, int> >::iterator it = openedTables.find(name);
   if ( !FileExists ( name.c_str() ) ) throw RFileException ( NotExists );
   this->name = name;
   current = 0;
-  openedTables[name].first = load();
+  if (it == openedTables.end()) 
+    openedTables[name].first = load();
   openedTables[name].second += 1;
   cout << "Users of this table: " << openedTables[name].second << endl;
+  
 }
 
 RTableFile::~RTableFile()
@@ -123,14 +126,14 @@ void RTableFile::write ( string name, RSQL::_RTable& t )
   RTableDefinition& def = t.first;
   vector<RTableRecord>& data = t.second;
   ofstream f ( name.c_str(), ios::out | ios::trunc );
-  f << def.size() << endl;
+  f << def.size();
   RTableDefinition::iterator it = def.begin();
   vector<string> names;
   while ( it != def.end() )
   {
     names.push_back ( it->first );
-    f << it->first;
-    f << ( it->second == TYPE_BOOL ) ?"bool": ( ( it->second == TYPE_LONG ) ?"long":"text" );
+    f << endl << it->first;
+    f << endl << ((it->second == TYPE_BOOL)?"bool":((it->second == TYPE_LONG)?"long":"text"));
     it++;
   }
   // проход по всем записям
@@ -144,22 +147,22 @@ void RTableFile::write ( string name, RSQL::_RTable& t )
         case TYPE_BOOL:
         {
           bool b;
-          reinterpret_cast<RBoolCell*> ( data[i][names[j]] )->getValue ( b );
-          f << b;
+          data[i][names[j]]->getValue ( b );
+          f << endl << b;
           break;
         }
         case TYPE_LONG:
         {
           long l;
           data[i][names[j]]->getValue ( l );
-          f << l;
+          f << endl << l;
           break;
         }
         case TYPE_TEXT:
         {
           string s;
           data[i][names[j]]->getValue ( s );
-          f << s;
+          f << endl << s;
           break;
         }
       }
@@ -168,6 +171,10 @@ void RTableFile::write ( string name, RSQL::_RTable& t )
   f.close();
 }
 
+void RTableFile::createRecord ( RTableRecord rec )
+{
+  openedTables[name].first.second.push_back(rec);
+}
 
 void RTableFile::create ( string name, RTableDefinition def )
 {
@@ -209,11 +216,11 @@ RTableFile RTableFile::open ( string name )
   return RTableFile(name);
 }
 
-RTableRecord RTableFile::readRecordAndGoToNext()
+RTableRecord RTableFile::readCurrentRecord()
 {
   vector<RTableRecord> v = openedTables[name].first.second;
   if (v.size() <= current) throw RFileException( OutOfRange );
-  return v[current++];
+  return v[current];
 }
 
 void RTableFile::deleteCurrentRecord()
@@ -222,11 +229,11 @@ void RTableFile::deleteCurrentRecord()
   v.erase(v.begin() + current);
 }
 
-void RTableFile::updateCurrentRecordAndGoToNext ( RTableRecord rec )
+void RTableFile::updateCurrentRecord ( RTableRecord rec )
 {
-  openedTables[name].first.second[current++] = rec;
+  openedTables[name].first.second[current] = rec;
 }
-
+  
 }
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

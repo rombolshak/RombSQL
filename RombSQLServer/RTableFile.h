@@ -45,9 +45,12 @@ namespace RSQL {
 		static void drop(string name);
 		static void delet(string name);
 		static RTableFile open(string name);
-		RTableRecord readRecordAndGoToNext();
+		void createRecord(RTableRecord);
+		RTableRecord readCurrentRecord();
 		void deleteCurrentRecord();
-		void updateCurrentRecordAndGoToNext(RTableRecord);
+		void updateCurrentRecord(RTableRecord);
+		void moveNext() {++current;}
+		void movePrev() {--current;}
 		void save();
 		void close(bool save = true);
 		~RTableFile();

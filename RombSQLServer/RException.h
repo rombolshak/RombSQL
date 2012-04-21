@@ -26,12 +26,27 @@ namespace RSQL {
 	public:
 		virtual string message();
 	};
-
+	
+	enum TableError {
+		NullChilds,
+		IllegType,
+		NotSameTypes,
+		NotBool,
+		NotLong,
+		NotText
+	};
+	class RTableException : public RException {
+		TableError code;
+	public:
+		RTableException(TableError te) {code = te;}
+		string message();
+	};
 	enum FileError {
 		NotExists,
 		FileExist,
 		OutOfRange
 	};
+	
 class RFileException : public RException {
 	FileError code;
 public:

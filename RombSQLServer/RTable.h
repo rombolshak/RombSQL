@@ -36,9 +36,15 @@ class RTableCondition
 	string fieldName;
 
 	RTableCondition *left, *right;
+	void bind(RTableRecord);
+	void bind( RFieldType, string str = "", long lon = 0, bool boo = false );
+    RTableCondition* runOp ( OpCode operation, RTableCondition* left, RTableCondition* right, RTableRecord rec );
+	RTableCondition* like ( OpCode operation, RTableCondition* left, RTableCondition* right );
+	RTableCondition* math ( OpCode operation, RTableCondition* left, RTableCondition* right );
+	RTableCondition* logic ( OpCode operation, RTableCondition* left, RTableCondition* right );
+	RTableCondition* comp ( OpCode operation, RTableCondition* left, RTableCondition* right );
 public:
-	void bind(string name, RFieldType, void * val);
-	RTableCondition * check();
+	RTableCondition * check(RTableRecord);
 };
 
 class RTable
@@ -50,6 +56,7 @@ class RTable
 		static bool Insert(string name, RTableRecord);
 		static bool Delete(string name, RTableCondition);
 		static vector< RTableRecord > Select(string name, vector< string > fields, RTableCondition);
+		static bool Update(string name, RTableRecord, RTableCondition);
 };
 }
 #endif // RTABLE_H
