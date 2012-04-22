@@ -33,7 +33,8 @@ namespace RSQL {
 		NotSameTypes,
 		NotBool,
 		NotLong,
-		NotText
+		NotText,
+		IllegOperation
 	};
 	class RTableException : public RException {
 		TableError code;
@@ -41,12 +42,12 @@ namespace RSQL {
 		RTableException(TableError te) {code = te;}
 		string message();
 	};
+	
 	enum FileError {
 		NotExists,
 		FileExist,
 		OutOfRange
-	};
-	
+	};	
 class RFileException : public RException {
 	FileError code;
 public:
@@ -62,6 +63,19 @@ class RCellException : public RException
 	CellError code;
 public:
 	RCellException(CellError ce) {code = ce;};
+	string message();
+};
+
+enum ServerError {
+	SocketFail,
+	BindFail,
+	ListenFail
+};
+class RServerException : public RException
+{
+	ServerError code;
+public:
+	RServerException(ServerError ce) {code = ce;};
 	string message();
 };
 }

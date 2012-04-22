@@ -21,6 +21,7 @@
 #include "RTableFile.h"
 #include "RException.h"
 #include <fstream>
+#include <cstdlib>
 
 namespace RSQL
 {
@@ -90,6 +91,7 @@ RTableCondition* RTableCondition::comp ( OpCode operation, RTableCondition* left
 				case TYPE_BOOL: res->b = (b1 >= b2); break;
 			}
 		}
+				default: throw RTableException(IllegOperation);
 	}
 	return res;
 }
@@ -106,7 +108,9 @@ RTableCondition* RTableCondition::like ( OpCode operation, RTableCondition* left
 	{
 		case OpLike: res->b = (std::ifstream ( "1" ) != NULL);
 		case OpNotLike: res->b = (std::ifstream ( "0" ) != NULL);
+		default: throw RTableException(IllegOperation);
 	}
+	return res;
 }
 RTableCondition* RTableCondition::logic ( OpCode operation, RTableCondition* left, RTableCondition* right )
 {
@@ -120,6 +124,7 @@ RTableCondition* RTableCondition::logic ( OpCode operation, RTableCondition* lef
 		case OpAnd: res->b = (b1 && b2);
 		case OpOr: res->b = (b1 || b2);
 		case OpNot: res->b = (b1 != b2);
+		default: throw RTableException(IllegOperation);
 	}
 	return res;
 }
@@ -137,6 +142,7 @@ RTableCondition* RTableCondition::math ( OpCode operation, RTableCondition* left
 		case OpMult:res->l = l1 * l2;
 		case OpDiv: res->l = l1 / l2;
 		case OpMod: res->l = l1 % l2;
+		default: throw RTableException(IllegOperation);
 	}
 	return res;
 }
@@ -163,6 +169,7 @@ RTableCondition* RTableCondition::runOp ( OpCode operation, RTableCondition* lef
 		case OpGreater:
 		case OpGreaterEq: return comp(operation, left->check(rec), right->check(rec));
 	}
+	return NULL;
 }
 void RTableCondition::bind ( RFieldType type , string str, long lon, bool boo )
 {
@@ -205,6 +212,7 @@ RTableCondition* RTableCondition::check ( RTableRecord rec )
 			return this;
 		}
 	}
+	return NULL;
 }
 
 bool RTable::CreateTable ( string name, RTableDefinition def )
@@ -214,7 +222,7 @@ bool RTable::CreateTable ( string name, RTableDefinition def )
 		RTableFile::create(name, def);
 		return true;
 	}
-	catch (RFileException) {return false;}
+	catch (RFileException) {throw;}
 }
 bool RTable::DeleteTable ( string name )
 {
@@ -223,7 +231,7 @@ bool RTable::DeleteTable ( string name )
 		RTableFile::delet(name);
 		return true;
 	}
-	catch(RFileException) {return false;}
+	catch(RFileException) {throw;}
 }
 bool RTable::DropTable ( string name )
 {
@@ -232,7 +240,7 @@ bool RTable::DropTable ( string name )
 		RTableFile::drop(name);
 		return true;
 	}
-	catch (RFileException) {return false;}
+	catch (RFileException) {throw;}
 }
 
 bool RTable::Insert ( string name, RTableRecord rec )
@@ -244,7 +252,7 @@ bool RTable::Insert ( string name, RTableRecord rec )
 		f.close();
 		return true;
 	}
-	catch (...) {return false;}
+	catch (...) {throw;}
 }
 
 bool RTable::Delete ( string name, RTableCondition cond )
@@ -263,7 +271,7 @@ bool RTable::Delete ( string name, RTableCondition cond )
 		}
 		return true;
 	}
-	catch (...) {return false;}
+	catch (...) {throw;}
 }
 bool RTable::Update ( string name, RTableRecord newRec, RTableCondition cond )
 {
@@ -281,7 +289,7 @@ bool RTable::Update ( string name, RTableRecord newRec, RTableCondition cond )
 		}
 		return true;
 	}
-	catch (...) {return false;}
+	catch (...) {throw;}
 }
 vector< RTableRecord > RTable::Select ( string name, vector< string > fields, RTableCondition cond )
 {
@@ -298,14 +306,14 @@ vector< RTableRecord > RTable::Select ( string name, vector< string > fields, RT
 			catch (RFileException e) {break;}
 			if (cond.check(rec))
 			{
-				for (int i = 0; i < fields.size(); ++i)
+				for (uint i = 0; i < fields.size(); ++i)
 					tmp[fields[i]] = rec[fields[i]];
 				res.push_back(tmp);
 			}
 			f.moveNext();
 		}
 	}
-	catch (...) {}
+	catch (...) {throw;}
 	return res;
 }
 

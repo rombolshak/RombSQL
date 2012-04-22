@@ -38,7 +38,6 @@ enum OpCode
     OpNotLike,
     OpAdd,
     OpSub,
-    OpNegate,
     OpMult,
     OpDiv,
     OpMod,

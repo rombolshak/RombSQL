@@ -40,9 +40,18 @@ string RTableException::message()
 		case NotBool: return "Значение не является bool";
 		case NotLong: return "Значение не является long";
 		case NotText: return "Значение не является text";
+		case IllegOperation: return "Недопустимое значение операции";
 	}
 }
-
+string RServerException::message()
+{
+		switch (code)
+		{
+			case SocketFail: return "Не удалось создать сокет";
+			case BindFail: return "Не удалось связать сокет с локальным адресом";
+			case ListenFail: return "Ошибка при вызове listen()";
+		}
+}
 string RCellException::message()
 {
   return RSQL::RException::message();
