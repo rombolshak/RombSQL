@@ -20,303 +20,238 @@
 #include "RTable.h"
 #include "RTableFile.h"
 #include "RException.h"
+#include "RTableCondition.h"
 #include <fstream>
 #include <cstdlib>
 
+#include <sstream>
+
 namespace RSQL
 {
-RTableCondition* RTableCondition::comp ( OpCode operation, RTableCondition* left, RTableCondition* right )
-{
-	if ((left->nodeType != Value) || (right->nodeType != Value)) throw RTableException(IllegType);
-	if (left->retType != right->retType) throw RTableException(NotSameTypes);
-	RFieldType t = left->retType;
-	long l1, l2; string s1, s2; bool b1, b2;
-	if (t == TYPE_LONG) {l1 = left->l; l2 = right->l;}
-	else if (t == TYPE_TEXT) {s1 = left->s; s2 = right->s;}
-	else {b1 = left->b; b2 = right->b;}
-	RTableCondition *res = new RTableCondition(); res->nodeType = Value; res->retType = TYPE_BOOL;
-	switch (operation)
-	{
-		case OpEq:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 == l2); break;
-				case TYPE_TEXT: res->b = (s1 == s2); break;
-				case TYPE_BOOL: res->b = (b1 == b2); break;
-			}
-		}
-		case OpNeq:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 != l2); break;
-				case TYPE_TEXT: res->b = (s1 != s2); break;
-				case TYPE_BOOL: res->b = (b1 != b2); break;
-			}
-		}
-		case OpLess:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 < l2); break;
-				case TYPE_TEXT: res->b = (s1 < s2); break;
-				case TYPE_BOOL: res->b = (b1 < b2); break;
-			}
-		}
-		case OpLessEq:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 <= l2); break;
-				case TYPE_TEXT: res->b = (s1 <= s2); break;
-				case TYPE_BOOL: res->b = (b1 <= b2); break;
-			}
-		}
-		case OpGreater:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 > l2); break;
-				case TYPE_TEXT: res->b = (s1 > s2); break;
-				case TYPE_BOOL: res->b = (b1 > b2); break;
-			}
-		}
-		case OpGreaterEq:
-		{
-			switch (t)
-			{
-				case TYPE_LONG: res->b = (l1 >= l2); break;
-				case TYPE_TEXT: res->b = (s1 >= s2); break;
-				case TYPE_BOOL: res->b = (b1 >= b2); break;
-			}
-		}
-				default: throw RTableException(IllegOperation);
-	}
-	return res;
-}
-RTableCondition* RTableCondition::like ( OpCode operation, RTableCondition* left, RTableCondition* right )
-{
-	if ((left->nodeType != Value) || (right->nodeType != Value)) throw RTableException(IllegType);
-	if (left->retType != right->retType) throw RTableException(NotSameTypes);
-	if (left->retType != TYPE_TEXT) throw RTableException(NotText);
-	string s1 = left->s, s2 = right->s;
-	RTableCondition *res = new RTableCondition(); res->nodeType = Value; res->retType = TYPE_BOOL;
-	string q = "./regex.sh " + s2 + s1;
-	system(q.c_str());
-	switch (operation)
-	{
-		case OpLike: res->b = (std::ifstream ( "1" ) != NULL);
-		case OpNotLike: res->b = (std::ifstream ( "0" ) != NULL);
-		default: throw RTableException(IllegOperation);
-	}
-	return res;
-}
-RTableCondition* RTableCondition::logic ( OpCode operation, RTableCondition* left, RTableCondition* right )
-{
-	if ((left->nodeType != Value) || (right->nodeType != Value)) throw RTableException(IllegType);
-	if (left->retType != right->retType) throw RTableException(NotSameTypes);
-	if (left->retType != TYPE_BOOL) throw RTableException(NotBool);
-	bool b1 = left->b, b2 = right->b;
-	RTableCondition *res = new RTableCondition(); res->nodeType = Value; res->retType = TYPE_BOOL;
-	switch (operation)
-	{
-		case OpAnd: res->b = (b1 && b2);
-		case OpOr: res->b = (b1 || b2);
-		case OpNot: res->b = (b1 != b2);
-		default: throw RTableException(IllegOperation);
-	}
-	return res;
-}
-RTableCondition* RTableCondition::math ( OpCode operation, RTableCondition* left, RTableCondition* right )
-{
-	if ((left->nodeType != Value) || (right->nodeType != Value)) throw RTableException(IllegType);
-	if (left->retType != right->retType) throw RTableException(NotSameTypes);
-	if (left->retType != TYPE_LONG) throw RTableException(NotLong);
-	long l1 = left->l; long l2 = right->l;
-	RTableCondition *res = new RTableCondition(); res->nodeType = Value; res->retType = TYPE_LONG;
-	switch (operation)
-	{
-		case OpAdd: res->l = l1 + l2;
-		case OpSub: res->l = l1 - l2;
-		case OpMult:res->l = l1 * l2;
-		case OpDiv: res->l = l1 / l2;
-		case OpMod: res->l = l1 % l2;
-		default: throw RTableException(IllegOperation);
-	}
-	return res;
-}
-
-
-RTableCondition* RTableCondition::runOp ( OpCode operation, RTableCondition* left, RTableCondition* right, RTableRecord rec )
-{
-	switch (operation)
-	{
-		case OpLike:
-		case OpNotLike: return like(operation, left->check(rec), right->check(rec));
-		case OpAdd:
-		case OpSub:
-		case OpMult:
-		case OpDiv:
-		case OpMod: return math(operation, left->check(rec), right->check(rec));
-		case OpAnd:
-		case OpOr:
-		case OpNot: return logic(operation, left->check(rec), right->check(rec));
-		case OpEq:
-		case OpNeq:
-		case OpLess:
-		case OpLessEq:
-		case OpGreater:
-		case OpGreaterEq: return comp(operation, left->check(rec), right->check(rec));
-	}
-	return NULL;
-}
-void RTableCondition::bind ( RFieldType type , string str, long lon, bool boo )
-{
-	nodeType = Value;
-	retType = type;
-	if (type == TYPE_BOOL) b = boo;
-	else if (type == TYPE_LONG) l = lon;
-	else s = str;
-}
-void RTableCondition::bind ( RTableRecord rec )
-{
-	RCell *cell = rec[fieldName];
-	bool b; long l; string s; RFieldType t = cell->getType();
-	switch (t)
-	{
-		case TYPE_BOOL: cell->getValue(b); break;
-		case TYPE_LONG: cell->getValue(l); break;
-		case TYPE_TEXT: cell->getValue(s); break;
-	}
-	bind(t,s,l,b);
-}
-
-
-RTableCondition* RTableCondition::check ( RTableRecord rec )
-{
-	switch (nodeType)
-	{
-		case Operation:
-		{
-			if ((!left) || (!right)) throw RTableException(NullChilds);
-			return runOp(operation, left, right, rec);
-		}
-		case Value:
-		{
-			return this;
-		}
-		case Field:
-		{
-			bind(rec);
-			return this;
-		}
-	}
-	return NULL;
-}
 
 bool RTable::CreateTable ( string name, RTableDefinition def )
 {
-	try 
-	{
-		RTableFile::create(name, def);
-		return true;
-	}
-	catch (RFileException) {throw;}
-}
-bool RTable::DeleteTable ( string name )
-{
-	try 
-	{
-		RTableFile::delet(name);
-		return true;
-	}
-	catch(RFileException) {throw;}
+  try
+    {
+      RTableFile::create ( name, def );
+      return true;
+    }
+  catch ( RFileException )
+    {
+      throw;
+    }
 }
 bool RTable::DropTable ( string name )
 {
-	try
-	{
-		RTableFile::drop(name);
-		return true;
-	}
-	catch (RFileException) {throw;}
+  try
+    {
+      RTableFile::drop ( name );
+      return true;
+    }
+  catch ( RFileException )
+    {
+      throw;
+    }
 }
-
+bool RTable::TruncateTable ( string name )
+{
+  try
+    {
+      RTableFile::truncate ( name );
+      return true;
+    }
+  catch ( RFileException )
+    {
+      throw;
+    }
+}
 bool RTable::Insert ( string name, RTableRecord rec )
 {
-	try 
-	{
-		RTableFile f = RTableFile::open(name);
-		f.createRecord(rec);
-		f.close();
-		return true;
-	}
-	catch (...) {throw;}
+  try
+    {
+      RTableFile f = RTableFile::open ( name );
+      RTableDefinition def = f.getDefinition();
+      if ( def.size() != rec.size() ) throw new RTableException ( ColumnsNumber );
+      bool valid = true;
+      RTableDefinition::iterator it = def.begin();
+      while ( it != def.end() )
+        if ( rec[it->first]->getType() != it->second )
+          {
+            valid = false;
+            break;
+          }
+        else it++;
+      if ( valid )
+        f.createRecord ( rec );
+      else
+        {
+          stringstream s;
+          s << "Плохой тип у " << it->first << endl;
+          throw new RException ( s.str() );
+        }
+      f.close();
+      return true;
+    }
+  catch ( ... )
+    {
+      throw;
+    }
 }
+bool RTable::Insert ( string name, std::vector< RCell* > cells )
+{
+  try
+    {
+      RTableFile f = RTableFile::open ( name );
+      RTableDefinition def = f.getDefinition();
+      f.close();
+      RTableRecord rec;
+      map<string, RFieldType>::iterator it = def.begin();
+      int i = 0;
+      while ( ( it != def.end() ) && ( i < cells.size() ) )
+        rec[it++->first] = cells[i++];
+      if ( ( it != def.end() ) || ( i < cells.size() ) ) throw new RTableException ( ColumnsNumber );
+      return Insert ( name, rec );
+    }
+  catch ( ... )
+    {
+      throw;
+    }
+}
+
 
 bool RTable::Delete ( string name, RTableCondition cond )
 {
-	try 
-	{
-		RTableFile f = RTableFile::open(name);
-		RTableRecord rec;
-		while (true) {
-		try {
-		rec = f.readCurrentRecord();
-		}
-		catch (RFileException e) {break;}
-		if (cond.check(rec)) f.deleteCurrentRecord();
-		f.moveNext();
-		}
-		return true;
-	}
-	catch (...) {throw;}
+  try
+    {
+      RTableFile f = RTableFile::open ( name );
+      RTableRecord rec;
+      while ( true )
+        {
+          try
+            {
+              rec = f.readCurrentRecord();
+            }
+          catch ( RFileException* e )
+            {
+              break;
+            }
+          if ( cond.check ( rec ) ) f.deleteCurrentRecord();
+          else f.moveNext();
+        }
+      f.close();
+      return true;
+    }
+  catch ( ... )
+    {
+      throw;
+    }
 }
-bool RTable::Update ( string name, RTableRecord newRec, RTableCondition cond )
+bool RTable::Update ( string name, vector<RTableAssignment> newVal, RTableCondition cond )
 {
-	try 
-	{
-		RTableFile f = RTableFile::open(name);
-		RTableRecord rec;
-		while (true) {
-			try {
-				rec = f.readCurrentRecord();
-			}
-			catch (RFileException e) {break;}
-			if (cond.check(rec)) f.updateCurrentRecord(newRec);
-			f.moveNext();
-		}
-		return true;
-	}
-	catch (...) {throw;}
+  try
+    {
+      RTableFile f = RTableFile::open ( name );
+      RTableRecord rec;
+      while ( true )
+        {
+          try
+            {
+              rec = f.readCurrentRecord();
+            }
+          catch ( RFileException* e )
+            {
+              break;
+            }
+          if ( cond.check ( rec ) )
+            for ( int i = 0; i < newVal.size(); ++i )
+              {
+                bool valid = true;
+                RTableDefinition def = f.getDefinition();
+                RTableDefinition::iterator it = def.begin();
+                while ( it != def.end() )
+                  if ( rec[it->first]->getType() != it->second )
+                    {
+                      valid = false;
+                      break;
+                    }
+                  else it++;
+                if ( valid )
+                  f.updateCurrentRecord (
+                    make_pair<string, RCell*> (
+                      newVal[i].first,
+                      newVal[i].second->_check ( rec )->getValue() )
+                  );
+                else
+                  {
+                    stringstream s;
+                    s << "Плохой тип у " << it->first << endl;
+                    throw new RException ( s.str() );
+                  }
+              }
+          f.moveNext();
+        }
+      f.close();
+      return true;
+    }
+  catch ( ... )
+    {
+      throw;
+    }
 }
-vector< RTableRecord > RTable::Select ( string name, vector< string > fields, RTableCondition cond )
+_RTable RTable::Select ( string name, vector< string > fields, RTableCondition cond )
 {
-	vector<RTableRecord> res;
-	RTableRecord tmp;
-	try 
-	{
-		RTableFile f = RTableFile::open(name);
-		RTableRecord rec;
-		while (true) {
-			try {
-				rec = f.readCurrentRecord();
-			}
-			catch (RFileException e) {break;}
-			if (cond.check(rec))
-			{
-				for (uint i = 0; i < fields.size(); ++i)
-					tmp[fields[i]] = rec[fields[i]];
-				res.push_back(tmp);
-			}
-			f.moveNext();
-		}
-	}
-	catch (...) {throw;}
-	return res;
+  vector<RTableRecord> res;
+  RTableDefinition def;
+  RTableRecord tmp;
+  try
+    {
+      RTableFile f = RTableFile::open ( name );
+      def = f.getDefinition();
+      if (fields.size() != 0)
+      {
+        RTableDefinition::iterator it = def.begin();
+        while (it != def.end())
+        {
+          bool contains = false;
+          for (int i = 0; i < fields.size(); ++i)
+            if (it->first == fields[i])
+            {contains = true; break;}
+          if (!contains) def.erase(it->first);
+          it++;
+        }
+      }
+      RTableRecord rec;
+      while ( true )
+        {
+          try
+            {
+              rec = f.readCurrentRecord();
+            }
+          catch ( RFileException* e )
+            {
+              break;
+            }
+          if ( cond.check ( rec ) )
+            {
+              if ( fields.size() == 0 ) tmp = rec;
+              else
+                for ( uint i = 0; i < fields.size(); ++i )
+                  tmp[fields[i]] = rec[fields[i]];
+              res.push_back ( tmp );
+              tmp.clear();
+            }
+          f.moveNext();
+        }
+      f.close();
+    }
+  catch ( ... )
+    {
+      throw;
+    }
+  return make_pair<RTableDefinition, vector<RTableRecord> > ( def, res );
 }
 
 
-	
+
 }
+// kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

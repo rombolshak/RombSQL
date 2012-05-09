@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -21,22 +21,6 @@
 
 namespace RSQL
 {
-RCell* RCell::exec ( OpCode , RCell* right )
-{
-
-}
-RCell* RLongCell::exec ( OpCode o, RCell* c )
-{
-  return RSQL::RCell::exec ( o, c );
-}
-RCell* RTextCell::exec ( OpCode o, RCell* c )
-{
-  return RSQL::RCell::exec ( o, c );
-}
-RCell* RBoolCell::exec ( OpCode o, RCell* c )
-{
-  return RSQL::RCell::exec ( o, c );
-}
 
 }
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

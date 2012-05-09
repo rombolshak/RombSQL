@@ -22,41 +22,24 @@
 
 #include "RTableFile.h"
 #include "RException.h"
+#include "RTableCondition.h"
 #include <string>
 using namespace std;
 
 namespace RSQL {
 
-class RTableCondition
-{
-	enum {Operation, Value, Field} nodeType;
-	OpCode operation;
-	RFieldType retType;
-	long l; string s; bool b;
-	string fieldName;
-
-	RTableCondition *left, *right;
-	void bind(RTableRecord);
-	void bind( RFieldType, string str = "", long lon = 0, bool boo = false );
-    RTableCondition* runOp ( OpCode operation, RTableCondition* left, RTableCondition* right, RTableRecord rec );
-	RTableCondition* like ( OpCode operation, RTableCondition* left, RTableCondition* right );
-	RTableCondition* math ( OpCode operation, RTableCondition* left, RTableCondition* right );
-	RTableCondition* logic ( OpCode operation, RTableCondition* left, RTableCondition* right );
-	RTableCondition* comp ( OpCode operation, RTableCondition* left, RTableCondition* right );
-public:
-	RTableCondition * check(RTableRecord);
-};
-
+	typedef pair<string, RTableCondition*> RTableAssignment;
 class RTable
 {
 	public:
 		static bool CreateTable(string name, RTableDefinition);
-		static bool DeleteTable(string name);
 		static bool DropTable(string name);
+		static bool TruncateTable(string name);
 		static bool Insert(string name, RTableRecord);
+		static bool Insert(string name, vector<RCell*>);
 		static bool Delete(string name, RTableCondition);
-		static vector< RTableRecord > Select(string name, vector< string > fields, RTableCondition);
-		static bool Update(string name, RTableRecord, RTableCondition);
+		static _RTable Select(string name, vector< string > fields, RTableCondition);
+		static bool Update(string name, vector<RTableAssignment>, RTableCondition);
 };
 }
 #endif // RTABLE_H

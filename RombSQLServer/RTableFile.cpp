@@ -53,9 +53,9 @@ _RTable& RTableFile::load ( string name )
   }
   while ( !f.eof() )
   {
-    for ( int i = 0; i < def.size(); ++i )
+    RTableRecord rec;
+    for ( unsigned int i = 0; i < def.size(); ++i )
     {
-      RTableRecord rec;
       switch ( def[names[i]] )
       {
         case TYPE_LONG:
@@ -80,8 +80,8 @@ _RTable& RTableFile::load ( string name )
           break;
         }
       }
-      data.push_back ( rec );
     }
+    data.push_back ( rec );
   }
   t->first = def;
   t->second = data;
@@ -92,27 +92,29 @@ _RTable& RTableFile::load ( string name )
 RTableFile::RTableFile ( string name )
 {
   map<string, pair <_RTable, int> >::iterator it = openedTables.find(name);
-  if ( !FileExists ( name.c_str() ) ) throw RFileException ( NotExists );
+  if ( !FileExists ( name.c_str() ) ) throw new RFileException ( NotExists );
   this->name = name;
   current = 0;
   if (it == openedTables.end()) 
     openedTables[name].first = load();
   openedTables[name].second += 1;
-  cout << "Users of this table: " << openedTables[name].second << endl;
-  
+  cout << "Open file: " << openedTables[name].second << "users" << endl;
 }
 
 RTableFile::~RTableFile()
 {
   close ( false );
+  if ( --openedTables[name].second == 0 ) ;//openedTables.erase ( name );
+  cout << openedTables[name].second << " users" << endl;
 }
 
 void RTableFile::close ( bool save )
 {
+  if (save) cout << "Close with saving" << endl;
+  else cout << "Close without saving" << endl;
   if ( save )
     this->save();
   //of.write(wr.write(convertToJson(openedTables[name].first)).c_str(), 1);
-  if ( --openedTables[name].second == 0 ) openedTables.erase ( name );
 }
 
 void RTableFile::save()
@@ -137,10 +139,10 @@ void RTableFile::write ( string name, RSQL::_RTable& t )
     it++;
   }
   // проход по всем записям
-  for ( int i = 0; i < data.size(); ++i )
+  for ( unsigned int i = 0; i < data.size(); ++i )
   {
     // по каждому полю
-    for ( int j = 0; j < names.size(); ++i )
+    for ( unsigned int j = 0; j < names.size(); ++j )
     {
       switch ( def[names[j]] )
       {
@@ -178,13 +180,13 @@ void RTableFile::createRecord ( RTableRecord rec )
 
 void RTableFile::create ( string name, RTableDefinition def )
 {
-  if (FileExists(name.c_str())) throw RFileException( FileExist );
+  if (FileExists(name.c_str())) throw new RFileException( FileExist );
   _RTable t; vector<RTableRecord> v;
   t.first = def; t.second = v;
   write(name, t);
 }
 
-void RTableFile::drop ( string name )
+void RTableFile::truncate ( string name )
 {
   map< string, pair <_RTable, int> >::iterator it = openedTables.find(name);
   if (it != openedTables.end()) 
@@ -205,7 +207,7 @@ void RTableFile::drop ( string name )
   }
 }
 
-void RTableFile::delet ( string name )
+void RTableFile::drop ( string name )
 {
   openedTables.erase(name);
   std::remove(name.c_str());
@@ -216,22 +218,27 @@ RTableFile RTableFile::open ( string name )
   return RTableFile(name);
 }
 
+RTableDefinition RTableFile::getDefinition()
+{
+  return openedTables[name].first.first;
+}
+
 RTableRecord RTableFile::readCurrentRecord()
 {
-  vector<RTableRecord> v = openedTables[name].first.second;
-  if (v.size() <= current) throw RFileException( OutOfRange );
+  const vector<RTableRecord>& v = openedTables[name].first.second;
+  if (v.size() <= current) throw new RFileException( OutOfRange );
   return v[current];
 }
 
 void RTableFile::deleteCurrentRecord()
 {
-  vector<RTableRecord> v = openedTables[name].first.second;
+  vector<RTableRecord>& v = openedTables[name].first.second;
   v.erase(v.begin() + current);
 }
 
-void RTableFile::updateCurrentRecord ( RTableRecord rec )
+void RTableFile::updateCurrentRecord ( pair<string, RCell*> rec )
 {
-  openedTables[name].first.second[current] = rec;
+  openedTables[name].first.second[current][rec.first] = rec.second;
 }
   
 }

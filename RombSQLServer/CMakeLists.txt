@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8)
 	
 project(rombsqlserver)
 
-add_executable(rombsqlserver RDbCommand.cpp RServer.cpp RTable.cpp RException.cpp RCell.cpp RTableFile.cpp main.cpp jsoncpp/src/json_reader.cpp jsoncpp/src/json_writer.cpp jsoncpp/src/json_value.cpp)
+add_executable(rombsqlserver RTableCondition.cpp RLexer.cpp RParser.cpp RDbCommand.cpp RServer.cpp RTable.cpp RException.cpp RCell.cpp RTableFile.cpp main.cpp)
 
 FILE(GLOB UnitTests_SRCS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "tests/*Test.cpp" )
 ADD_EXECUTABLE(UnitTester tests/main.cpp ${UnitTests_SRCS} )

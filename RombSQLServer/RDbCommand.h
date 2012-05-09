@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -26,41 +26,72 @@
 using namespace std;
 namespace RSQL
 {
+typedef enum {ERROR, SUCCESS} statusResult;
+
+/**
+ * Результат выполнения команды
+ */
 class RDbResult
 {
 public:
-    enum {ERROR, SUCCESS} status;
-    string errMessage() {return status==ERROR?e.message():"";}
-    vector< RTableRecord > result() {if (!select) throw 403; return selectRes;}
+    statusResult status;
+    string errMessage()
+    {
+        return status==ERROR?e.message() :"";
+    }
+    /**
+     * Вернет таблицу, если тип выполненной команды — SELECT
+     */
+    _RTable result()
+    {
+        if ( !select ) throw 403;
+        return selectRes;
+    }
 private:
     friend class RDbSelectCommand;
     friend class RDbInsertCommand;
     friend class RDbUpdateCommand;
-    friend class RDbDeleteRecordCommand;
-    friend class RDbDeleteTableCommand;
+    friend class RDbDeleteCommand;
     friend class RDbDropCommand;
+    friend class RDbTruncateCommand;
     friend class RDbCreateCommand;
     RException e;
     bool select;
-    vector< RTableRecord > selectRes;
-    RDbResult(bool success) {select = false; status = success?SUCCESS:ERROR;}
-    RDbResult(RException ex) {status = ERROR; e = ex;}
-    RDbResult(vector< RTableRecord > res) {status = SUCCESS; select = true; selectRes = res;}
+    _RTable selectRes;
+    RDbResult ( bool success )
+    {
+        select = false;
+        status = success?SUCCESS:ERROR;
+    }
+    RDbResult ( RException ex )
+    {
+        status = ERROR;
+        e = ex;
+    }
+    RDbResult ( _RTable res )
+    {
+        status = SUCCESS;
+        select = true;
+        selectRes = res;
+    }
 };
 
 class RDbCommand
 {
 protected:
     string tableName;
+    RDbCommand ( string name ) : tableName ( name ) {}
 public:
     virtual RDbResult execute() = 0;
-    static RDbCommand * parseFromString(string query);
 };
 
 class RDbInsertCommand : public RDbCommand
 {
-    RTableRecord rec;
+    RTableRecord rec; // вставляем либо готовую запись
+    vector<RCell*> cells; // либо массив ячеек приводим к виду записи
 public:
+    RDbInsertCommand ( string name, RTableRecord r ) : RDbCommand ( name ), rec ( r ) {}
+    RDbInsertCommand ( string name, vector<RCell*> c ) : RDbCommand ( name ), cells ( c ) {}
     virtual RDbResult execute();
 };
 
@@ -69,35 +100,41 @@ class RDbSelectCommand : public RDbCommand
     vector<string> fields;
     RTableCondition cond;
 public:
+    RDbSelectCommand ( string name, vector<string> f, RTableCondition c ) : RDbCommand ( name ), fields ( f ), cond ( c ) {}
     virtual RDbResult execute();
 };
 class RDbUpdateCommand : public RDbCommand
 {
-    RTableRecord rec;
+    vector<RTableAssignment> rec; // список присваиваний. Присваивание есть <имя>=<выражение>, поэтому синтаксический не будет ругаться на что-то вида id=(age+13)AND(name='qwe'), но присвоить значение типа bool невозможно (см. грамматику)
     RTableCondition cond;
 public:
+    RDbUpdateCommand ( string name, vector<RTableAssignment> r, RTableCondition c ) : RDbCommand ( name ), rec ( r ), cond ( c ) {}
     virtual RDbResult execute();
 };
-class RDbDeleteRecordCommand : public RDbCommand
+class RDbDeleteCommand : public RDbCommand
 {
     RTableCondition cond;
 public:
+    RDbDeleteCommand ( string name, RTableCondition c ) : RDbCommand ( name ), cond ( c ) {}
     virtual RDbResult execute();
 };
-class RDbDeleteTableCommand : public RDbCommand
+class RDbDropCommand : public RDbCommand
 {
 public:
+    RDbDropCommand ( string name ) : RDbCommand ( name ) {}
     virtual RDbResult execute();
 };
 class RDbCreateCommand : public RDbCommand
 {
     RTableDefinition def;
 public:
+    RDbCreateCommand ( string name, RTableDefinition d ) : RDbCommand ( name ), def ( d ) {}
     virtual RDbResult execute();
 };
-class RDbDropCommand : public RDbCommand
+class RDbTruncateCommand : public RDbCommand
 {
 public:
+    RDbTruncateCommand ( string name ) : RDbCommand ( name ) {}
     virtual RDbResult execute();
 };
 }

@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -32,68 +32,80 @@ enum RFieldType
     TYPE_LONG,
     TYPE_BOOL
 };
-enum OpCode
-{
-    OpLike,
-    OpNotLike,
-    OpAdd,
-    OpSub,
-    OpMult,
-    OpDiv,
-    OpMod,
-    OpAnd,
-    OpOr,
-    OpNot,
-    OpEq,
-    OpNeq,
-    OpLess,
-    OpGreater,
-    OpLessEq,
-    OpGreaterEq
-};
 
 class RCell
 {
 public:
     virtual RFieldType getType() = 0;
-    virtual RCell * exec  ( OpCode, RCell * right );
     virtual void getValue ( long& ) = 0;
     virtual void getValue ( string& ) = 0;
     virtual void getValue ( bool& ) = 0;
-    virtual ~RCell() {cout << "RCell destructor" << endl;}
 };
 class RLongCell : public RCell
 {
     long l;
 public:
-    RLongCell(long val) : l(val) {}
-    RFieldType getType() {return TYPE_LONG;}
-    RCell * exec (OpCode, RCell*);
-    void getValue(long& val) {val = l;}
-    void getValue(string&) {throw RCellException(IllegalType);}
-    void getValue(bool&) {throw RCellException(IllegalType);}
+    RLongCell ( long val ) : l ( val ) {}
+    RFieldType getType()
+    {
+        return TYPE_LONG;
+    }
+    void getValue ( long& val )
+    {
+        val = l;
+    }
+    void getValue ( string& )
+    {
+        throw new RCellException ( IllegalType );
+    }
+    void getValue ( bool& )
+    {
+        throw new RCellException ( IllegalType );
+    }
 };
 class RTextCell : public RCell
 {
     string s;
 public:
-    RTextCell(string val) : s(val) {}
-    RFieldType getType() {return TYPE_TEXT;}
-    RCell * exec (OpCode, RCell*);
-    void getValue(string& val) {val = s;}
-    void getValue(long&) {throw RCellException(IllegalType);}
-    void getValue(bool&) {throw RCellException(IllegalType);}
+    RTextCell ( string val ) : s ( val ) {}
+    RFieldType getType()
+    {
+        return TYPE_TEXT;
+    }
+    void getValue ( string& val )
+    {
+        val = s;
+    }
+    void getValue ( long& )
+    {
+        throw new RCellException ( IllegalType );
+    }
+    void getValue ( bool& )
+    {
+        throw new RCellException ( IllegalType );
+    }
 };
 class RBoolCell : public RCell
 {
     bool b;
 public:
-    RBoolCell(bool val) : b(val) {}
-    RFieldType getType() {return TYPE_BOOL;}
-    RCell * exec (OpCode, RCell*);
-    void getValue(long&) {throw RCellException(IllegalType);}
-    void getValue(string&) {throw RCellException(IllegalType);}
-    void getValue(bool& val) {val = b;}
+    RBoolCell ( bool val ) : b ( val ) {}
+    RFieldType getType()
+    {
+        return TYPE_BOOL;
+    }
+    void getValue ( long& )
+    {
+        throw new RCellException ( IllegalType );
+    }
+    void getValue ( string& )
+    {
+        throw new RCellException ( IllegalType );
+    }
+    void getValue ( bool& val )
+    {
+        val = b;
+    }
 };
 }
 

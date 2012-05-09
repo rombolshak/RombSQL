@@ -31,6 +31,7 @@ namespace RSQL {
 	typedef map<string, RFieldType> RTableDefinition;
 	typedef map<string, RCell*> RTableRecord;
 	typedef pair<RTableDefinition, vector<RTableRecord> > _RTable;
+	
 	class RTableFile 
 	{
 		string name;
@@ -40,15 +41,16 @@ namespace RSQL {
 		static _RTable& load(string name);
 		static void write ( string name, RSQL::_RTable& t );
 		RTableFile(string name);
-	public:		
+	public:
+		RTableDefinition getDefinition();
 		static void create(string name, RTableDefinition);
 		static void drop(string name);
-		static void delet(string name);
+		static void truncate(string name);
 		static RTableFile open(string name);
 		void createRecord(RTableRecord);
 		RTableRecord readCurrentRecord();
 		void deleteCurrentRecord();
-		void updateCurrentRecord(RTableRecord);
+		void updateCurrentRecord(pair<string, RCell*>);
 		void moveNext() {++current;}
 		void movePrev() {--current;}
 		void save();

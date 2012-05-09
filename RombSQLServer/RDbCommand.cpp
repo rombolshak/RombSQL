@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -18,71 +18,96 @@
 
 
 #include "RDbCommand.h"
+#include "RParser.h"
 
 namespace RSQL
 {
 RDbResult RDbCreateCommand::execute()
 {
-	try
-	{
-		RTable::CreateTable(tableName, def);
-		return RDbResult(true);
-	}
-	catch(RException e) {return RDbResult(e);}
+  try
+    {
+      RTable::CreateTable ( tableName, def );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
-RDbResult RDbDeleteRecordCommand::execute()
+RDbResult RDbDeleteCommand::execute()
 {
-	try
-	{
-		RTable::Delete(tableName, cond);
-		return RDbResult(true);
-	}
-	catch (RException e) {return RDbResult(e);}
-}
-RDbResult RDbDeleteTableCommand::execute()
-{
-	try
-	{
-		RTable::DeleteTable(tableName);
-		return RDbResult(true);
-	}
-	catch (RException e) {return RDbResult(e);}
+  try
+    {
+      RTable::Delete ( tableName, cond );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
 RDbResult RDbDropCommand::execute()
 {
-	try
-	{
-		RTable::DropTable(tableName);
-		return RDbResult(true);
-	}
-	catch (RException e) {return RDbResult(e);}
+  try
+    {
+      RTable::DropTable ( tableName );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
+}
+RDbResult RDbTruncateCommand::execute()
+{
+  try
+    {
+      RTable::TruncateTable ( tableName );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
 RDbResult RDbInsertCommand::execute()
 {
-	try
-	{
-		RTable::Insert(tableName, rec);
-		return RDbResult(true);
-	}
-	catch (RException e) {return RDbResult(e);}
+  try
+    {
+      if ( cells.size() == 0 ) // если задан массив ячеек вместо записи
+        RTable::Insert ( tableName, rec ); // да, мне впадлу было тут преобразовывать, пусть таблица этим занимается
+      else RTable::Insert ( tableName, cells );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
 RDbResult RDbUpdateCommand::execute()
 {
-	try
-	{
-		RTable::Update(tableName, rec, cond);
-		return RDbResult(true);
-	}
-	catch (RException e) {return RDbResult(e);}
+  try
+    {
+      RTable::Update ( tableName, rec, cond );
+      return RDbResult ( true );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
 RDbResult RDbSelectCommand::execute()
 {
-	try
-	{
-		vector< RTableRecord > res = RTable::Select(tableName, fields, cond);
-		return RDbResult(res);
-	}
-	catch (RException e) {return RDbResult(e);}
+  try
+    {
+      _RTable res = RTable::Select ( tableName, fields, cond );
+      return RDbResult ( res );
+    }
+  catch ( RException e )
+    {
+      return RDbResult ( e );
+    }
 }
-	
+
 }
+// kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

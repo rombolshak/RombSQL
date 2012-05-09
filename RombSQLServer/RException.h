@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -21,62 +21,120 @@
 #define REXCEPTION_H
 #include <string>
 using namespace std;
-namespace RSQL {
-	class RException {
-	public:
-		virtual string message();
-	};
-	
-	enum TableError {
-		NullChilds,
-		IllegType,
-		NotSameTypes,
-		NotBool,
-		NotLong,
-		NotText,
-		IllegOperation
-	};
-	class RTableException : public RException {
-		TableError code;
-	public:
-		RTableException(TableError te) {code = te;}
-		string message();
-	};
-	
-	enum FileError {
-		NotExists,
-		FileExist,
-		OutOfRange
-	};	
-class RFileException : public RException {
-	FileError code;
+namespace RSQL
+{
+class RException
+{
+    string s;
 public:
-	RFileException(FileError fe) {code = fe;};
-	string message();
+    RException()
+    {
+        s = "Крайне информативное сообщение об ошибке. Удачной диагностики ;)\n";
+    }
+    RException ( string s )
+    {
+        this->s = s;
+    }
+    virtual string message();
 };
 
-enum CellError {
-	IllegalType
+enum TableError
+{
+    NullChilds,
+    IllegType,
+    NotSameTypes,
+    NotBool,
+    NotLong,
+    NotText,
+    IllegOperation,
+    ColumnsNumber
+};
+class RTableException : public RException
+{
+    TableError code;
+public:
+    RTableException ( TableError te )
+    {
+        code = te;
+    }
+    string message();
+};
+
+enum FileError
+{
+    NotExists,
+    FileExist,
+    OutOfRange
+};
+class RFileException : public RException
+{
+    FileError code;
+public:
+    RFileException ( FileError fe )
+    {
+        code = fe;
+    };
+    string message();
+};
+
+enum CellError
+{
+    IllegalType
 };
 class RCellException : public RException
 {
-	CellError code;
+    CellError code;
 public:
-	RCellException(CellError ce) {code = ce;};
-	string message();
+    RCellException ( CellError ce )
+    {
+        code = ce;
+    };
+    string message();
 };
 
-enum ServerError {
-	SocketFail,
-	BindFail,
-	ListenFail
+class RLexerException : public RException
+{
+    string s;
+    int p;
+public:
+    RLexerException ( string str, int pos )
+    {
+        s=str;
+        p=pos;
+    };
+    string message();
+};
+
+class RParserException : public RException
+{
+    string s;
+public:
+    RParserException ( string e )
+    {
+        s=e;
+    }
+    string message()
+    {
+        return s;
+    }
+};
+
+enum ServerError
+{
+    SocketFail,
+    BindFail,
+    ListenFail
 };
 class RServerException : public RException
 {
-	ServerError code;
+    ServerError code;
 public:
-	RServerException(ServerError ce) {code = ce;};
-	string message();
+    RServerException ( ServerError ce )
+    {
+        code = ce;
+    };
+    string message();
 };
 }
 #endif // EXCEPTION_H
+// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 
