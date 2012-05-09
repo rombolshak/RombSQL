@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -20,12 +20,14 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-namespace RSQL {
+namespace RSQL
+{
 class RServer
 {
 public:
-	static void Start();
+    static void Start();
 };
 }
 
 #endif // SERVER_H
+// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 

@@ -1,5 +1,5 @@
 /*
-    RombSQL Server
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -28,7 +28,7 @@ bool FileExists ( const char *fname )
 }
 _RTable& RTableFile::load()
 {
-  return load(name);
+  return load ( name );
 }
 
 _RTable& RTableFile::load ( string name )
@@ -37,52 +37,53 @@ _RTable& RTableFile::load ( string name )
   RTableDefinition def;
   vector<RTableRecord> data;
   ifstream f ( name.c_str() );
-  
+
   vector<string> names;
   int defSize;
-  f >> defSize;
+  f >> defSize; // число колонок
   for ( int i = 0; i < defSize; ++i )
-  {
-    string name;
-    f >> name;
-    names.push_back ( name );
-    string type;
-    f >> type;
-    RFieldType t = ( type=="long" ) ?TYPE_LONG: ( ( type=="text" ) ?TYPE_TEXT:TYPE_BOOL );
-    def[name] = t;
-  }
-  while ( !f.eof() )
-  {
-    RTableRecord rec;
-    for ( unsigned int i = 0; i < def.size(); ++i )
     {
-      switch ( def[names[i]] )
-      {
-        case TYPE_LONG:
-        {
-          long l;
-          f >> l;
-          rec[names[i]] = new RLongCell ( l );
-          break;
-        }
-        case TYPE_TEXT:
-        {
-          string s;
-          f >> s;
-          rec[names[i]] = new RTextCell ( s );
-          break;
-        }
-        case TYPE_BOOL:
-        {
-          bool b;
-          f >> b;
-          rec[names[i]] = new RBoolCell ( b );
-          break;
-        }
-      }
+      string name; // имя колонки
+      f >> name;
+      names.push_back ( name );
+      string type; // и её тип
+      f >> type;
+      RFieldType t = ( type=="long" ) ?TYPE_LONG: ( ( type=="text" ) ?TYPE_TEXT:TYPE_BOOL );
+      def[name] = t;
     }
-    data.push_back ( rec );
-  }
+  while ( !f.eof() )
+    {
+      // дальше идет чтение записей
+      RTableRecord rec;
+      for ( unsigned int i = 0; i < def.size(); ++i )
+        {
+          switch ( def[names[i]] )
+            {// в зависимости от ожидаемого типа значение:
+            case TYPE_LONG:
+            {
+              long l;
+              f >> l;
+              rec[names[i]] = new RLongCell ( l );
+              break;
+            }
+            case TYPE_TEXT:
+            {
+              string s;
+              f >> s;
+              rec[names[i]] = new RTextCell ( s );
+              break;
+            }
+            case TYPE_BOOL:
+            {// это произойдет, только если руками внести в файл необходимые изменения. Грамматика не поддерживает тип bool
+              bool b;
+              f >> b;
+              rec[names[i]] = new RBoolCell ( b );
+              break;
+            }
+            }
+        }
+      data.push_back ( rec );
+    }
   t->first = def;
   t->second = data;
   return *t;
@@ -91,14 +92,14 @@ _RTable& RTableFile::load ( string name )
 
 RTableFile::RTableFile ( string name )
 {
-  map<string, pair <_RTable, int> >::iterator it = openedTables.find(name);
+  map<string, pair <_RTable, int> >::iterator it = openedTables.find ( name );
   if ( !FileExists ( name.c_str() ) ) throw new RFileException ( NotExists );
   this->name = name;
   current = 0;
-  if (it == openedTables.end()) 
-    openedTables[name].first = load();
+  if ( it == openedTables.end() )
+    openedTables[name].first = load(); // если файл еще не загружен в память, то загрузить
   openedTables[name].second += 1;
-  cout << "Open file: " << openedTables[name].second << "users" << endl;
+  cout << "Open file: " << openedTables[name].second << " users" << endl;
 }
 
 RTableFile::~RTableFile()
@@ -110,7 +111,7 @@ RTableFile::~RTableFile()
 
 void RTableFile::close ( bool save )
 {
-  if (save) cout << "Close with saving" << endl;
+  if ( save ) cout << "Close with saving" << endl;
   else cout << "Close without saving" << endl;
   if ( save )
     this->save();
@@ -120,11 +121,13 @@ void RTableFile::close ( bool save )
 void RTableFile::save()
 {
   _RTable& t = openedTables[name].first;
-  write(name, t);
+  write ( name, t );
 }
 
 void RTableFile::write ( string name, RSQL::_RTable& t )
 {
+  // переписываем весь файл заново. Поэтому если что то пойдет не так, с большой долей вероятности таблица будет повреждена. 
+  // В таком случае необходимо сделать TRUNCATE TABLE <name>, ибо описание обычно записывается корректно
   RTableDefinition& def = t.first;
   vector<RTableRecord>& data = t.second;
   ofstream f ( name.c_str(), ios::out | ios::trunc );
@@ -132,90 +135,93 @@ void RTableFile::write ( string name, RSQL::_RTable& t )
   RTableDefinition::iterator it = def.begin();
   vector<string> names;
   while ( it != def.end() )
-  {
-    names.push_back ( it->first );
-    f << endl << it->first;
-    f << endl << ((it->second == TYPE_BOOL)?"bool":((it->second == TYPE_LONG)?"long":"text"));
-    it++;
-  }
+    {
+      names.push_back ( it->first );
+      f << endl << it->first;
+      f << endl << ( ( it->second == TYPE_BOOL ) ?"bool": ( ( it->second == TYPE_LONG ) ?"long":"text" ) );
+      it++;
+    }
   // проход по всем записям
   for ( unsigned int i = 0; i < data.size(); ++i )
-  {
-    // по каждому полю
-    for ( unsigned int j = 0; j < names.size(); ++j )
     {
-      switch ( def[names[j]] )
-      {
-        case TYPE_BOOL:
+      // по каждому полю
+      for ( unsigned int j = 0; j < names.size(); ++j )
         {
-          bool b;
-          data[i][names[j]]->getValue ( b );
-          f << endl << b;
-          break;
+          switch ( def[names[j]] )
+            {
+            case TYPE_BOOL:
+            {
+              bool b;
+              data[i][names[j]]->getValue ( b );
+              f << endl << b;
+              break;
+            }
+            case TYPE_LONG:
+            {
+              long l;
+              data[i][names[j]]->getValue ( l );
+              f << endl << l;
+              break;
+            }
+            case TYPE_TEXT:
+            {
+              string s;
+              data[i][names[j]]->getValue ( s );
+              f << endl << s;
+              break;
+            }
+            }
         }
-        case TYPE_LONG:
-        {
-          long l;
-          data[i][names[j]]->getValue ( l );
-          f << endl << l;
-          break;
-        }
-        case TYPE_TEXT:
-        {
-          string s;
-          data[i][names[j]]->getValue ( s );
-          f << endl << s;
-          break;
-        }
-      }
     }
-  }
   f.close();
 }
 
 void RTableFile::createRecord ( RTableRecord rec )
 {
-  openedTables[name].first.second.push_back(rec);
+  // полностью доверяем вызывающему методу и не делаем проверок
+  openedTables[name].first.second.push_back ( rec );
 }
 
 void RTableFile::create ( string name, RTableDefinition def )
 {
-  if (FileExists(name.c_str())) throw new RFileException( FileExist );
-  _RTable t; vector<RTableRecord> v;
-  t.first = def; t.second = v;
-  write(name, t);
+  if ( FileExists ( name.c_str() ) ) throw new RFileException ( FileExist );
+  _RTable t;
+  vector<RTableRecord> v;
+  t.first = def;
+  t.second = v;
+  write ( name, t );
 }
 
 void RTableFile::truncate ( string name )
 {
-  map< string, pair <_RTable, int> >::iterator it = openedTables.find(name);
-  if (it != openedTables.end()) 
-  {
-    _RTable& t = openedTables[name].first;
-    t.second.clear();
-    vector<RTableRecord> a;
-    t.second = a;
-    write(name, t);
-  }
-  else 
-  {
-    _RTable& t = load(name);
-    t.second.clear();
-    vector<RTableRecord> a;
-    t.second = a;
-    write(name, t);
-  }
+  map< string, pair <_RTable, int> >::iterator it = openedTables.find ( name );
+  if ( it != openedTables.end() )
+    {
+      _RTable& t = openedTables[name].first;
+      t.second.clear();
+      vector<RTableRecord> a;
+      t.second = a;
+      write ( name, t );
+    }
+  else
+    {
+      _RTable& t = load ( name );
+      t.second.clear();
+      vector<RTableRecord> a;
+      t.second = a;
+      write ( name, t );
+    }
 }
 
 void RTableFile::drop ( string name )
 {
-  openedTables.erase(name);
-  std::remove(name.c_str());
+  openedTables.erase ( name );
+  std::remove ( name.c_str() );
 }
 
 RTableFile RTableFile::open ( string name )
 {
-  return RTableFile(name);
+  return RTableFile ( name );
 }
 
 RTableDefinition RTableFile::getDefinition()
@@ -226,21 +232,21 @@ RTableDefinition RTableFile::getDefinition()
 RTableRecord RTableFile::readCurrentRecord()
 {
   const vector<RTableRecord>& v = openedTables[name].first.second;
-  if (v.size() <= current) throw new RFileException( OutOfRange );
+  if ( v.size() <= current ) throw new RFileException ( OutOfRange );
   return v[current];
 }
 
 void RTableFile::deleteCurrentRecord()
 {
   vector<RTableRecord>& v = openedTables[name].first.second;
-  v.erase(v.begin() + current);
+  v.erase ( v.begin() + current );
 }
 
 void RTableFile::updateCurrentRecord ( pair<string, RCell*> rec )
 {
   openedTables[name].first.second[current][rec.first] = rec.second;
 }
-  
+
 }
 
 // kate: indent-mode cstyle; indent-width 2; replace-tabs on; 

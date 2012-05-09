@@ -1,5 +1,5 @@
 /*
-    <one line to give the program's name and a brief idea of what it does.>
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -26,20 +26,22 @@
 #include <string>
 using namespace std;
 
-namespace RSQL {
+namespace RSQL
+{
 
-	typedef pair<string, RTableCondition*> RTableAssignment;
+typedef pair<string, RTableCondition*> RTableAssignment;
 class RTable
 {
-	public:
-		static bool CreateTable(string name, RTableDefinition);
-		static bool DropTable(string name);
-		static bool TruncateTable(string name);
-		static bool Insert(string name, RTableRecord);
-		static bool Insert(string name, vector<RCell*>);
-		static bool Delete(string name, RTableCondition);
-		static _RTable Select(string name, vector< string > fields, RTableCondition);
-		static bool Update(string name, vector<RTableAssignment>, RTableCondition);
+public:
+    static bool CreateTable ( string name, RTableDefinition );
+    static bool DropTable ( string name );
+    static bool TruncateTable ( string name );
+    static bool Insert ( string name, RTableRecord );
+    static bool Insert ( string name, vector<RCell*> );
+    static bool Delete ( string name, RTableCondition );
+    static _RTable Select ( string name, vector< string > fields, RTableCondition );
+    static bool Update ( string name, vector<RTableAssignment>, RTableCondition );
 };
 }
 #endif // RTABLE_H
+// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 

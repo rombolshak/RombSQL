@@ -1,5 +1,5 @@
 /*
-    RombSQL Server
+    RombSQL Server. Simple SQL server w/ simple SQL commands supported
     Copyright (C) 2012  Большаков Роман <rombolshak@gmail.com>
 
     This program is free software: you can redistribute it and/or modify
@@ -27,36 +27,44 @@
 #include "RCell.h"
 
 using namespace std;
-namespace RSQL {
-	typedef map<string, RFieldType> RTableDefinition;
-	typedef map<string, RCell*> RTableRecord;
-	typedef pair<RTableDefinition, vector<RTableRecord> > _RTable;
-	
-	class RTableFile 
-	{
-		string name;
-		static map<string, pair <_RTable, int> > openedTables;
-		int current;
-		_RTable& load();
-		static _RTable& load(string name);
-		static void write ( string name, RSQL::_RTable& t );
-		RTableFile(string name);
-	public:
-		RTableDefinition getDefinition();
-		static void create(string name, RTableDefinition);
-		static void drop(string name);
-		static void truncate(string name);
-		static RTableFile open(string name);
-		void createRecord(RTableRecord);
-		RTableRecord readCurrentRecord();
-		void deleteCurrentRecord();
-		void updateCurrentRecord(pair<string, RCell*>);
-		void moveNext() {++current;}
-		void movePrev() {--current;}
-		void save();
-		void close(bool save = true);
-		~RTableFile();
-	};
+namespace RSQL
+{
+typedef map<string, RFieldType> RTableDefinition;
+typedef map<string, RCell*> RTableRecord;
+typedef pair<RTableDefinition, vector<RTableRecord> > _RTable;
+
+class RTableFile
+{
+    string name;
+    static map<string, pair <_RTable, int> > openedTables;
+    int current; // текущая запись в таблице
+    _RTable& load();
+    static _RTable& load ( string name );
+    static void write ( string name, RSQL::_RTable& t );
+    RTableFile ( string name );
+public:
+    RTableDefinition getDefinition();
+    static void create ( string name, RTableDefinition );
+    static void drop ( string name );
+    static void truncate ( string name );
+    static RTableFile open ( string name );
+    void createRecord ( RTableRecord );
+    RTableRecord readCurrentRecord();
+    void deleteCurrentRecord();
+    void updateCurrentRecord ( pair<string, RCell*> );
+    void moveNext()
+    {
+        ++current;
+    }
+    void movePrev()
+    {
+        --current;
+    }
+    void save();
+    void close ( bool save = true );
+    ~RTableFile();
+};
 }
 
 #endif // RTABLE_H
+// kate: indent-mode cstyle; indent-width 4; replace-tabs on; 
