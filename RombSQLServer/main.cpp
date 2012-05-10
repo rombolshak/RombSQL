@@ -5,6 +5,9 @@ using namespace RSQL;
 
 int main ( void )
 {
+  cout << "RombSQL Copyright © 2012 Большаков Роман <rombolshak@gmail.com> " << endl << 
+  "This program comes with ABSOLUTELY NO WARRANTY" << endl <<
+  "This is free software, and you are welcome to redistribute it under certain conditions; see source for details." << endl;
   RLexer::Init();
   try
     {

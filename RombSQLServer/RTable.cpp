@@ -194,8 +194,13 @@ _RTable RTable::Select ( string name, vector< string > fields, RTableCondition c
           if ( fields.size() == 0 ) tmp = rec;
           else
             for ( uint i = 0; i < fields.size(); ++i )
-              tmp[fields[i]] = rec[fields[i]];
-          res.push_back ( tmp );
+              {
+                RTableRecord::iterator it = rec.find ( fields[i] );
+                if ( it != rec.end() )
+                  tmp[fields[i]] = rec[fields[i]];
+              }
+          if ( def.size() != 0 )
+            res.push_back ( tmp );
           tmp.clear();
         }
       f.moveNext();
